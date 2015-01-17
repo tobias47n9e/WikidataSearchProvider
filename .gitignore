@@ -1,0 +1,6 @@
+*~
+*.mo
+gschemas.compiled
+locale/
+.idea
+
