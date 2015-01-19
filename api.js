@@ -1,3 +1,16 @@
+/* Wikidata Search Provider for Gnome Shell
+ *
+ * 2015 Contributors Bahodir Mansurov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * https://github.com/6ahodir/wikidata-search-provider
+ *
+ */
+
 const Lang = imports.lang;
 const Soup = imports.gi.Soup;
 const Params = imports.misc.params;
@@ -6,6 +19,7 @@ const PROTOCOL = 'https';
 const BASE_URL = 'wikidata.org';
 const DEFAULT_LANG = 'en';
 const API_PATH = 'w/api.php';
+const API_LIMIT = 10;
 const HTTP_TIMEOUT = 10;
 const USER_AGENT = 'WikidataSearchProvider extension for GNOME Shell';
 
@@ -33,21 +47,26 @@ const Api = new Lang.Class({
         this._params = Params.parse(params, {
             /**
              * @property {String} _params.protocol=PROTOCOL API protocol
+             * @accessor
              */
             protocol: PROTOCOL,
             /**
-             * @property {String} _params.base_url=BASE_URL API base url
+             * @property {String} _params.baseUrl=BASE_URL API base url
              */
-            base_url: BASE_URL,
+            baseUrl: BASE_URL,
             /**
-             * @property {String} _params.lang=DEFAULT_LANG API language
+             * @property {String} _params.language=DEFAULT_LANG API language
              * @accessor
              */
-            lang: DEFAULT_LANG,
+            language: DEFAULT_LANG,
             /**
-             * @property {String} _params.api_path=API_PATH API path
+             * @property {String} _params.apiPath=API_PATH API path
              */
-            api_path: API_PATH
+            apiPath: API_PATH,
+            /**
+             * @property {String} _params.limit=API_LIMIT API limit
+             */
+            limit: API_LIMIT
         });
 
         /**
@@ -71,7 +90,7 @@ const Api = new Lang.Class({
      */
     _getApiUrl: function() {
         return '%s://%s/%s?format=json&language=%s'
-            .format(PROTOCOL, BASE_URL, API_PATH, this.lang);
+            .format(PROTOCOL, BASE_URL, API_PATH, this.language);
     },
 
     /**
@@ -108,8 +127,8 @@ const Api = new Lang.Class({
      * @param {Object|null} callback.result Response data parsed in JSON format
      */
     get: function(queryParameters, callback) {
-        let query_url = this._getQueryUrl(queryParameters),
-            request = Soup.Message.new('GET', query_url),
+        let queryUrl = this._getQueryUrl(queryParameters),
+            request = Soup.Message.new('GET', queryUrl),
             result;
 
         this._session.queue_message(request,
@@ -123,6 +142,7 @@ const Api = new Lang.Class({
                 } else {
                     try {
                         result = JSON.parse(request.response_body.data);
+                        callback(null, result);
                     } catch(e) {
                         errorMessage = "Api.Client.get: %s".format(e);
                         log('%s. Response body: %s'
@@ -130,7 +150,6 @@ const Api = new Lang.Class({
                         );
                         callback(errorMessage, null);
                     }
-                    result && callback(null, result);
                 }
             })
         );
@@ -155,8 +174,7 @@ const Api = new Lang.Class({
             search: term,
             type: 'item',
             'continue': continue_,
-            // TODO: don't hardcode
-            limit: 10
+            limit: this.limit
         }, callback);
     },
 
@@ -169,19 +187,38 @@ const Api = new Lang.Class({
     },
 
     /**
-     * Get the API language
-     * @method getLang
+     * Get the API protocol
+     * @method getProtocol
+     * @returns {String} this._params.protocol
      */
-    get lang() {
-        return this._params.lang;
+    get protocol() {
+        return this._params.protocol;
+    },
+
+    /**
+     * Get the API limit
+     * @method getLimit
+     * @returns {String} this._params.limit
+     */
+    get limit() {
+        return this._params.limit;
+    },
+
+    /**
+     * Get the API language
+     * @method getLanguage
+     * @returns {String} this._params.language
+     */
+    get language() {
+        return this._params.language;
     },
 
     /**
      * Set the API language
-     * @method getLang
-     * @param {String} lang
+     * @method getLanguage
+     * @param {String} language
      */
-    set lang(lang) {
-        this._params.lang = lang;
+    set language(language) {
+        this._params.language = language;
     }
 });

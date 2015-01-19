@@ -1,0 +1,11 @@
+{
+  "description": "To search in Wikidata enter the keyword (default is 'wd') and your request after a space. You can also specify a language different from the default by adding to the keyword sign '-' and the language code.\nExample 1: 'wd gnome' - look for the 'gnome' in Wikidata specified by default in the configuration of extension.\nExample 2: 'wd-es gnome' - will look for the 'gnome' in the Spanish Wikidata.\nShortcuts:\n<Super><Alt>w - to search from clipboard\n<Super><Alt><Shift>w - to search from primary selection",
+  "name": "Wikidata Search Provider",
+  "shell-version": [
+      "3.14"
+  ],
+  "url": "https://github.com/6ahodir/wikidata-search-provider",
+  "uuid": "wikidata_search_provider@6ahodir.gmail.com",
+  "settings-schema": "org.gnome.shell.extensions.wikidata-search-provider",
+  "version": 1
+}
