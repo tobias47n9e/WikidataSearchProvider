@@ -1,5 +1,5 @@
 {
-  "description": "To search in Wikidata enter the keyword (default is 'wd') and your request after a space. You can also specify a language different from the default by adding to the keyword sign '-' and the language code.\nExample 1: 'wd gnome' - look for the 'gnome' in Wikidata specified by default in the configuration of extension.",
+  "description": "Search wikidata.org directly from GNOME Shell",
   "name": "Wikidata Search Provider",
   "shell-version": [
       "3.14"
