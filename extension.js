@@ -20,9 +20,9 @@ const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Api = Me.imports.api;
 
 const WikidataSearchProvider = new Lang.Class({
-    Name : 'WikidataSearchProvider',
+    Name: 'WikidataSearchProvider',
 
-    _init : function() {
+    _init: function() {
         var self = this;
         this.id = 'wikidata-search-provider';
         this.appInfo = {
@@ -47,7 +47,7 @@ const WikidataSearchProvider = new Lang.Class({
      * @param {Array} terms
      * @param timestamp
      */
-    activateResult : function(identifier, terms, timestamp) {
+    activateResult: function(identifier, terms, timestamp) {
         let result = this.resultsMap.get(identifier);
         Util.trySpawnCommandLine(
             "xdg-open " + this._api.protocol + ':' + result.url);
@@ -71,13 +71,15 @@ const WikidataSearchProvider = new Lang.Class({
      * Wikidata query must start with a 'wd' as the first term.
      * @param {Array} terms
      * @param {Function} callback
-     * @param cancellable
+     * @param {Gio.Cancellable} cancellable
      */
-    getInitialResultSet : function(terms, callback, cancellable) {
+    getInitialResultSet: function(terms, callback, cancellable) {
         // terms holds array of search items
         // the first term must start with a 'w' (=wikidata),
         // otherwise drop the request
         if (terms.length >= 2 && terms[0] === 'wd') {
+			// cancell the previous request
+			cancellable.cancel();
             this._api.searchEntities(
                 terms.slice(1).join(' '),
                 Lang.bind(this, this._getResultSet, callback)
@@ -101,7 +103,7 @@ const WikidataSearchProvider = new Lang.Class({
      * @param {number} max
      * @returns {Array}
      */
-    filterResults : function(results, max) {
+    filterResults: function(results, max) {
         // override max for now
         max = this._api.limit;
         return results.slice(0, max);
@@ -113,7 +115,7 @@ const WikidataSearchProvider = new Lang.Class({
      * @returns {{id: String, name: String, description: String, createIcon: Function}}
      * @private
      */
-    _getResultMeta : function(identifier) {
+    _getResultMeta: function(identifier) {
         let meta = this.resultsMap.get(identifier);
         return {
             id: meta.id,
