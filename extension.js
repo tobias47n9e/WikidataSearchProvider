@@ -78,8 +78,8 @@ const WikidataSearchProvider = new Lang.Class({
         // the first term must start with a 'w' (=wikidata),
         // otherwise drop the request
         if (terms.length >= 2 && terms[0] === 'wd') {
-			// cancell the previous request
-			cancellable.cancel();
+            // cancell the previous request
+            cancellable.cancel();
             this._api.searchEntities(
                 terms.slice(1).join(' '),
                 Lang.bind(this, this._getResultSet, callback)
