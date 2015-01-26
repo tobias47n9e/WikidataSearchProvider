@@ -36,6 +36,22 @@ const WikidataSearchProvider = new Lang.Class({
                 return self.id;
             }
         };
+        // Custom messages that will be shown as search results
+        this._messages = {
+            '__loading__': {
+                id: '__loading__',
+                name: 'Wikidata',
+                description : 'Loading items from Wikidata, please wait...',
+                // TODO: do these kinds of icon creations better
+                createIcon: Lang.bind(this, this.createIcon, {})
+            },
+            '__no_results__': {
+                id: '__no_results__',
+                name: 'Wikidata',
+                description : 'No results found.',
+                createIcon: Lang.bind(this, this.createIcon, {})
+            }
+        };
         // API results will be stored here
         this.resultsMap = new Map();
         this._api = new Api.Api();
@@ -48,9 +64,14 @@ const WikidataSearchProvider = new Lang.Class({
      * @param timestamp
      */
     activateResult: function(identifier, terms, timestamp) {
-        let result = this.resultsMap.get(identifier);
-        Util.trySpawnCommandLine(
-            "xdg-open " + this._api.protocol + ':' + result.url);
+        let result;
+        // only do something if the result is not a custom message
+        if (!(identifier in this._messages)) {
+            result = this.resultsMap.get(identifier);
+            // TODO: check that result is not empty
+            Util.trySpawnCommandLine(
+                "xdg-open " + this._api.protocol + ':' + result.url);
+        }
     },
 
     /**
@@ -80,11 +101,24 @@ const WikidataSearchProvider = new Lang.Class({
         if (terms.length >= 2 && terms[0] === 'wd') {
             // cancell the previous request
             cancellable.cancel();
+            // show the loading message
+            this.showMessage('__loading__', callback);
+            // now search
             this._api.searchEntities(
                 terms.slice(1).join(' '),
                 Lang.bind(this, this._getResultSet, callback)
             );
         }
+    },
+
+    /**
+     * Show any message as a search item
+     * @param {String} identifier Message identifier
+     * @param {Function} callback Callback that pushes the result to search
+     * overview
+     */
+    showMessage: function (identifier, callback) {
+        callback([identifier]);
     },
 
     /**
@@ -116,17 +150,27 @@ const WikidataSearchProvider = new Lang.Class({
      * @private
      */
     _getResultMeta: function(identifier) {
-        let meta = this.resultsMap.get(identifier);
-        return {
-            id: meta.id,
-            name: meta.label,
-            description : meta.description,
-            createIcon: Lang.bind(this, this.createIcon, meta)
-        };
+        let result,
+            meta;
+        // return predefined message if it exists
+        if (identifier in this._messages) {
+            result = this._messages[identifier];
+        } else {
+            // TODO: check for messages that don't exist, show generic error message
+            meta = this.resultsMap.get(identifier);
+            result = {
+                id: meta.id,
+                name: meta.label,
+                description : meta.description,
+                createIcon: Lang.bind(this, this.createIcon, meta)
+            };
+        }
+        return result;
     },
 
     /**
-     * Parse results that we get from the API and save them in this.resultsMap
+     * Parse results that we get from the API and save them in this.resultsMap.
+     * Inform the user if no results are found.
      * @param {null|String} error
      * @param {Object|null} result
      * @param {Function} callback
@@ -140,10 +184,11 @@ const WikidataSearchProvider = new Lang.Class({
                 self.resultsMap.set(result.id, result);
                 results.push(result.id);
             });
+            callback(results);
         } else {
             log(error || JSON.stringify(result));
+            this.showMessage('__no_results__', callback);
         }
-        callback(results);
     },
 
     /**
