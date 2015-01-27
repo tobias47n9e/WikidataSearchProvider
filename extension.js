@@ -45,10 +45,10 @@ const WikidataSearchProvider = new Lang.Class({
                 // TODO: do these kinds of icon creations better
                 createIcon: Lang.bind(this, this.createIcon, {})
             },
-            '__no_results__': {
-                id: '__no_results__',
+            '__error__': {
+                id: '__error__',
                 name: 'Wikidata',
-                description : 'No results found.',
+                description : 'Oops, an error occurred while searching.',
                 createIcon: Lang.bind(this, this.createIcon, {})
             }
         };
@@ -185,9 +185,12 @@ const WikidataSearchProvider = new Lang.Class({
                 results.push(result.id);
             });
             callback(results);
+        } else if (error) {
+            // Let the user know that an error has occurred.
+            log(error);
+            this.showMessage('__error__', callback);
         } else {
-            log(error || JSON.stringify(result));
-            this.showMessage('__no_results__', callback);
+            callback(results);
         }
     },
 
