@@ -12,6 +12,7 @@
  */
 
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Util = imports.misc.util;
@@ -55,6 +56,8 @@ const WikidataSearchProvider = new Lang.Class({
         // API results will be stored here
         this.resultsMap = new Map();
         this._api = new Api.Api();
+		// Wait before making an API request
+		this._timeoutId = 0;
     },
 
     /**
@@ -103,11 +106,19 @@ const WikidataSearchProvider = new Lang.Class({
             cancellable.cancel();
             // show the loading message
             this.showMessage('__loading__', callback);
-            // now search
-            this._api.searchEntities(
-                terms.slice(1).join(' '),
-                Lang.bind(this, this._getResultSet, callback)
-            );
+			// remove previous timeout
+			if (this._timeoutId > 0) {
+				Mainloop.source_remove(this._timeoutId);
+				this._timeoutId = 0;
+			}
+			// wait 0.2 seconds before making an API request
+			this._timeoutId = Mainloop.timeout_add(200, Lang.bind(this, function() {
+				// now search
+				this._api.searchEntities(
+					terms.slice(1).join(' '),
+					Lang.bind(this, this._getResultSet, callback)
+				);
+			}));
         }
     },
 
