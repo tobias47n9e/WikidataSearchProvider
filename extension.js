@@ -60,6 +60,16 @@ const WikidataSearchProvider = new Lang.Class({
 		this._timeoutId = 0;
     },
 
+	/**
+	 * Launch the search in the default app (i.e. browser)
+	 * @param {String[]} terms
+	 * TODO: find out why it's not working
+	 */
+	launchSearch: function (terms) {
+		Util.trySpawnCommandLine(
+			"xdg-open " + this._api.getFullSearchUrl(this._getQuery(terms)));
+	},
+
     /**
      * Open the url in default app
      * @param {String} identifier
@@ -115,7 +125,7 @@ const WikidataSearchProvider = new Lang.Class({
 			this._timeoutId = Mainloop.timeout_add(200, Lang.bind(this, function() {
 				// now search
 				this._api.searchEntities(
-					terms.slice(1).join(' '),
+					this._getQuery(terms),
 					Lang.bind(this, this._getResultSet, callback)
 				);
 			}));
@@ -153,6 +163,15 @@ const WikidataSearchProvider = new Lang.Class({
         max = this._api.limit;
         return results.slice(0, max);
     },
+
+	/**
+	 * Return query string from terms array
+	 * @param {String[]} terms
+	 * @returns {String}
+	 */
+	_getQuery: function(terms) {
+		return terms.slice(1).join(' ');
+	},
 
     /**
      * Return meta from result

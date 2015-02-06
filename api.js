@@ -117,6 +117,16 @@ const Api = new Lang.Class({
         return url;
     },
 
+	/**
+	 * Get the language specific full search URL of the term
+	 * @param {String} term
+	 * @returns {String} ex: https://www.wikidata.org/w/index.php?seearch=обама&setlang=uz
+	 */
+	getFullSearchUrl: function(term) {
+        return '%s://%s/w/index.php?search=%s&setlang=%s'
+            .format(PROTOCOL, BASE_URL, term, this.language);
+	},
+
     /**
      * Query the API
      * @param {Object} queryParameters Query parameters
