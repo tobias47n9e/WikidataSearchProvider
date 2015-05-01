@@ -11,6 +11,9 @@
  *
  */
 
+// To debug: log('blah');
+// And run: journalctl /usr/bin/gnome-session -f -o cat | grep LOG
+
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
@@ -25,18 +28,18 @@ const WikidataSearchProvider = new Lang.Class({
 
     _init: function() {
         var self = this;
-        this.id = 'wikidata-search-provider';
-        this.appInfo = {
-            get_name : function() {
-                return 'Wikidata Search Provider';
-            },
-            get_icon : function() {
-                return Gio.icon_new_for_string(Me.path + "/wikidata_logo.svg");
-            },
-            get_id : function() {
-                return self.id;
-            }
+
+        // Use the default app for opening https links as the app for
+        // launching full search.
+        this.appInfo = Gio.AppInfo.get_default_for_uri_scheme('https');
+        // Fake the name and icon of the app
+        this.appInfo.get_name = function() {
+            return 'Wikidata Search Provider';
         };
+        this.appInfo.get_icon = function() {
+            return Gio.icon_new_for_string(Me.path + "/wikidata_logo.svg");
+        };
+
         // Custom messages that will be shown as search results
         this._messages = {
             '__loading__': {
@@ -63,11 +66,10 @@ const WikidataSearchProvider = new Lang.Class({
 	/**
 	 * Launch the search in the default app (i.e. browser)
 	 * @param {String[]} terms
-	 * TODO: find out why it's not working
 	 */
 	launchSearch: function (terms) {
-		Util.trySpawnCommandLine(
-			"xdg-open " + this._api.getFullSearchUrl(this._getQuery(terms)));
+        Util.trySpawnCommandLine(
+            "xdg-open " + this._api.getFullSearchUrl(this._getQuery(terms)));
 	},
 
     /**
@@ -81,9 +83,10 @@ const WikidataSearchProvider = new Lang.Class({
         // only do something if the result is not a custom message
         if (!(identifier in this._messages)) {
             result = this.resultsMap.get(identifier);
-            // TODO: check that result is not empty
-            Util.trySpawnCommandLine(
-                "xdg-open " + this._api.protocol + ':' + result.url);
+            if (result) {
+                Util.trySpawnCommandLine(
+                    "xdg-open " + this._api.protocol + ':' + result.url);
+            }
         }
     },
 
@@ -109,11 +112,9 @@ const WikidataSearchProvider = new Lang.Class({
      */
     getInitialResultSet: function(terms, callback, cancellable) {
         // terms holds array of search items
-        // the first term must start with a 'w' (=wikidata),
+        // the first term must start with a 'wd' (=wikidata),
         // otherwise drop the request
         if (terms.length >= 2 && terms[0] === 'wd') {
-            // cancell the previous request
-            cancellable.cancel();
             // show the loading message
             this.showMessage('__loading__', callback);
 			// remove previous timeout
@@ -126,9 +127,12 @@ const WikidataSearchProvider = new Lang.Class({
 				// now search
 				this._api.searchEntities(
 					this._getQuery(terms),
-					Lang.bind(this, this._getResultSet, callback)
+					Lang.bind(this, this._getResultSet, callback, this._timeoutId)
 				);
 			}));
+        } else {
+            // return an emtpy result set
+            this._getResultSet(null, {}, callback, 0);
         }
     },
 
@@ -206,10 +210,11 @@ const WikidataSearchProvider = new Lang.Class({
      * @param {Function} callback
      * @private
      */
-    _getResultSet: function (error, result, callback) {
+    _getResultSet: function (error, result, callback, timeoutId) {
         let self = this,
             results = [];
-        if (result.search && result.search.length > 0) {
+        // log(error, JSON.stringify(result), timeoutId, this._timeoutId);
+        if (timeoutId === this._timeoutId && result.search && result.search.length > 0) {
             result.search.forEach(function (result) {
                 self.resultsMap.set(result.id, result);
                 results.push(result.id);
