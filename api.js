@@ -230,5 +230,15 @@ const Api = new Lang.Class({
      */
     set language(language) {
         this._params.language = language;
+    },
+
+    /**
+     * Get the default API language
+     * @method getDefaultLanguage
+     * @returns {String} DEFAULT_LANG
+     */
+    get defaultLanguage() {
+        return DEFAULT_LANG;
     }
+
 });

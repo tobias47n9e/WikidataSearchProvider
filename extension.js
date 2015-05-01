@@ -85,7 +85,8 @@ const WikidataSearchProvider = new Lang.Class({
             result = this.resultsMap.get(identifier);
             if (result) {
                 Util.trySpawnCommandLine(
-                    "xdg-open " + this._api.protocol + ':' + result.url);
+                    "xdg-open " + this._api.protocol + ':' + result.url +
+                    '?setlang=' + this._api.language);
             }
         }
     },
@@ -111,10 +112,12 @@ const WikidataSearchProvider = new Lang.Class({
      * @param {Gio.Cancellable} cancellable
      */
     getInitialResultSet: function(terms, callback, cancellable) {
+        let meta;
         // terms holds array of search items
-        // the first term must start with a 'wd' (=wikidata),
-        // otherwise drop the request
-        if (terms.length >= 2 && terms[0] === 'wd') {
+        // The first term must start with a 'wd' (=wikidata).
+        // It can be of the form 'wd', 'wd-en', 'wd-ru'. The part after
+        // the dash is the search language.
+        if (terms.length >= 2 && terms[0].substr(0, 2) === 'wd') {
             // show the loading message
             this.showMessage('__loading__', callback);
 			// remove previous timeout
@@ -124,6 +127,13 @@ const WikidataSearchProvider = new Lang.Class({
 			}
 			// wait 0.2 seconds before making an API request
 			this._timeoutId = Mainloop.timeout_add(200, Lang.bind(this, function() {
+                // set the language
+                meta = terms[0].split('-');
+                if (meta.length == 2){
+                    this._api.language = meta[1];
+                } else {
+                    this._api.language = this._api.defaultLanguage;
+                }
 				// now search
 				this._api.searchEntities(
 					this._getQuery(terms),
