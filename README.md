@@ -8,8 +8,8 @@ HOWTO
 ===
 Install
 ====
-* ```git clone https://github.com/6ahodir/wikidata-search-provider ~/.local/share/gnome-shell/extensions/wikidata-search-provider@6ahodir.gmail.com```
-* Hit ```<Alt> + F2``` and type ```r``` and hit ```<Enter>```
+* ```git clone https://github.com/tobias47n9e/WikidataSearchProvider ~/.local/share/gnome-shell/extensions/WikidataSearchProvider@tobias47n9e```
+* Hit ```<Alt> + F2``` and type ```r``` and hit ```<Enter>``` (or use a shell extension reloader)
 * Enable the extension in ```gnome-tweak-tool```
 
 Use
