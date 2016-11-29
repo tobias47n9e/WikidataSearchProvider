@@ -84,22 +84,22 @@ const Api = new Lang.Class({
     },
 
     /**
-     * Construct the API URL
-     * @returns {String} Language specific API URL that expects a response
-     * in JSON
-     * @private
-     */
+    * Construct the API URL
+    * @returns {String} Language specific API URL that expects a response
+    * in JSON
+    * @private
+    */
     _getApiUrl: function() {
         return '%s://%s/%s?format=json&language=%s'
             .format(PROTOCOL, BASE_URL, API_PATH, this.language);
     },
 
     /**
-     * Construct query URL using the API URL and query parameters
-     * @param {Object} queryParameters
-     * @returns {String} Query URL
-     * @private
-     */
+    * Construct query URL using the API URL and query parameters
+    * @param {Object} queryParameters
+    * @returns {String} Query URL
+    * @private
+    */
     _getQueryUrl: function(queryParameters) {
         let queryString = '',
             url = this._getApiUrl(),
@@ -118,25 +118,25 @@ const Api = new Lang.Class({
         return url;
     },
 
-	/**
-	 * Get the language specific full search URL of the term
-	 * @param {String} term
-	 * @returns {String} ex: https://www.wikidata.org/w/index.php?seearch=обама&setlang=uz
-	 */
-	getFullSearchUrl: function(term) {
+    /**
+    * Get the language specific full search URL of the term
+    * @param {String} term
+    * @returns {String} ex: https://www.wikidata.org/w/index.php?seearch=обама&setlang=uz
+    */
+    getFullSearchUrl: function(term) {
         return '%s://%s/w/index.php?search=%s&setlang=%s'
             .format(PROTOCOL, BASE_URL, term, this.language);
-	},
+    },
 
     /**
-     * Query the API
-     * @param {Object} queryParameters Query parameters
-     * @param {Function} callback Callback that will be called with an
-     * error message or a result.
-     * @param {null|String} callback.errorMessage Message describing
-     * what went wrong
-     * @param {Object|null} callback.result Response data parsed in JSON format
-     */
+    * Query the API
+    * @param {Object} queryParameters Query parameters
+    * @param {Function} callback Callback that will be called with an
+    * error message or a result.
+    * @param {null|String} callback.errorMessage Message describing
+    * what went wrong
+    * @param {Object|null} callback.result Response data parsed in JSON format
+    */
     get: function(queryParameters, callback) {
         let queryUrl = this._getQueryUrl(queryParameters),
             request = Soup.Message.new('GET', queryUrl),

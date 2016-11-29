@@ -60,18 +60,18 @@ const WikidataSearchProvider = new Lang.Class({
         // API results will be stored here
         this.resultsMap = new Map();
         this._api = new Api.Api();
-		// Wait before making an API request
-		this._timeoutId = 0;
+        // Wait before making an API request
+        this._timeoutId = 0;
     },
 
-	/**
-	 * Launch the search in the default app (i.e. browser)
-	 * @param {String[]} terms
-	 */
-	launchSearch: function (terms) {
+    /**
+    * Launch the search in the default app (i.e. browser)
+    * @param {String[]} terms
+    */
+    launchSearch: function (terms) {
         Util.trySpawnCommandLine(
             "xdg-open " + this._api.getFullSearchUrl(this._getQuery(terms)));
-	},
+    },
 
     /**
      * Open the url in default app
@@ -121,13 +121,13 @@ const WikidataSearchProvider = new Lang.Class({
         if (terms.length >= 2 && terms[0].substr(0, 2) === 'wd') {
             // show the loading message
             this.showMessage('__loading__', callback);
-			// remove previous timeout
-			if (this._timeoutId > 0) {
-				Mainloop.source_remove(this._timeoutId);
-				this._timeoutId = 0;
-			}
-			// wait 0.2 seconds before making an API request
-			this._timeoutId = Mainloop.timeout_add(200, Lang.bind(this, function() {
+            // remove previous timeout
+            if (this._timeoutId > 0) {
+                Mainloop.source_remove(this._timeoutId);
+                this._timeoutId = 0;
+            }
+            // wait 0.2 seconds before making an API request
+            this._timeoutId = Mainloop.timeout_add(200, Lang.bind(this, function() {
                 // set the language
                 meta = terms[0].split('-');
                 if (meta.length == 2){
@@ -135,12 +135,12 @@ const WikidataSearchProvider = new Lang.Class({
                 } else {
                     this._api.language = this._api.defaultLanguage;
                 }
-				// now search
-				this._api.searchEntities(
-					this._getQuery(terms),
-					Lang.bind(this, this._getResultSet, callback, this._timeoutId)
-				);
-			}));
+                // now search
+                this._api.searchEntities(
+                    this._getQuery(terms),
+                    Lang.bind(this, this._getResultSet, callback, this._timeoutId)
+                );
+        }));
         } else {
             // return an emtpy result set
             this._getResultSet(null, {}, callback, 0);
@@ -179,14 +179,14 @@ const WikidataSearchProvider = new Lang.Class({
         return results.slice(0, max);
     },
 
-	/**
-	 * Return query string from terms array
-	 * @param {String[]} terms
-	 * @returns {String}
-	 */
-	_getQuery: function(terms) {
-		return terms.slice(1).join(' ');
-	},
+    /**
+    * Return query string from terms array
+    * @param {String[]} terms
+    * @returns {String}
+    */
+    _getQuery: function(terms) {
+    return terms.slice(1).join(' ');
+    },
 
     /**
      * Return meta from result
